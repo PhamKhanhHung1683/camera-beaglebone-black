@@ -1,0 +1,37 @@
+diff --git a/am335x-boneblack.dts.orig b/am335x-boneblack.dts
+index cc702ed..5ba8b02 100644
+--- a/arch/arm/boot/dts/am335x-boneblack.dts
++++ b/arch/arm/boot/dts/am335x-boneblack.dts
+@@ -168,3 +168,32 @@
+ 		"NC",
+ 		"NC";
+ };
++
++&ocp {
++    P9_17_pinmux { status = "disabled"; };  /* i2c1_scl */
++    P9_18_pinmux { status = "disabled"; };  /* i2c1_sda */
++};
++
++&am33xx_pinmux {
++    bb_i2c1_pins: pinmux_bb_i2c1_pins {
++        pinctrl-single,pins = <
++            0x158 0x72 /* P9_18 = i2c1_sda, SLEW | PULLUP | MODE2 */
++            0x15c 0x72  /* P9_17 = i2c1_scl, SLEW | PULLUP | MODE2 */
++        >;
++    };
++};
++
++&i2c1 {
++    status = "okay";
++    pinctrl-names = "default";
++    pinctrl-0 = <&bb_i2c1_pins>;
++    clock-frequency = <400000>;
++
++    #address-cells = <1>;
++    #size-cells = <0>;
++
++    ssd1306: oled@3c {
++        compatible = "hungpk,ssd1306-i2c";
++        reg = <0x3c>;
++    };
++};
