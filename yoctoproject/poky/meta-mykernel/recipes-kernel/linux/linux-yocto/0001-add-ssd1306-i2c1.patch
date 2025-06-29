@@ -1,22 +1,17 @@
 diff --git a/am335x-boneblack.dts.orig b/am335x-boneblack.dts
-index cc702ed..5ba8b02 100644
+index cc702ed..3378a2a 100644
 --- a/arch/arm/boot/dts/am335x-boneblack.dts
 +++ b/arch/arm/boot/dts/am335x-boneblack.dts
-@@ -168,3 +168,32 @@
+@@ -168,3 +168,28 @@
  		"NC",
  		"NC";
  };
 +
-+&ocp {
-+    P9_17_pinmux { status = "disabled"; };  /* i2c1_scl */
-+    P9_18_pinmux { status = "disabled"; };  /* i2c1_sda */
-+};
-+
 +&am33xx_pinmux {
-+    bb_i2c1_pins: pinmux_bb_i2c1_pins {
++    i2c1_pins: pinmux_i2c1_pins {
 +        pinctrl-single,pins = <
-+            0x158 0x72 /* P9_18 = i2c1_sda, SLEW | PULLUP | MODE2 */
-+            0x15c 0x72  /* P9_17 = i2c1_scl, SLEW | PULLUP | MODE2 */
++            AM33XX_PADCONF(AM335X_PIN_SPI0_D1, PIN_INPUT_PULLUP, MUX_MODE2)  /* spi0_d1.i2c1_sda, SLEWCTRL_SLOW | INPUT_PULLUP | MODE2 */
++            AM33XX_PADCONF(AM335X_PIN_SPI0_CS0, PIN_INPUT_PULLUP, MUX_MODE2) /* spi0_cs0.i2c1_scl, SLEWCTRL_SLOW | INPUT_PULLUP | MODE2 */
 +        >;
 +    };
 +};
@@ -24,7 +19,8 @@ index cc702ed..5ba8b02 100644
 +&i2c1 {
 +    status = "okay";
 +    pinctrl-names = "default";
-+    pinctrl-0 = <&bb_i2c1_pins>;
++    pinctrl-0 = <&i2c1_pins>;
++    
 +    clock-frequency = <400000>;
 +
 +    #address-cells = <1>;
