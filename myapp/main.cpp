@@ -17,7 +17,7 @@ int main() {
     std::string ip = "239.255.0.1";
     int port = 1234;
 
-    std::string output_dir = "./records";
+    std::string output_dir = "/var/lib/myapp/records";
     const int max_files = 3;
 
     if (ssd1306_init() == -1) {
@@ -31,7 +31,7 @@ int main() {
     }
 
     cv::CascadeClassifier face_cascade;
-    if (!face_cascade.load(".//haarcascade_frontalface_default.xml")) {
+    if (!face_cascade.load("/usr/share/myapp/haarcascade_frontalface_default.xml")) {
         std::cerr << "Failed to load haarcascade\n";
         return -1;
     }
