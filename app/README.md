@@ -52,7 +52,7 @@ ninja
 ninja install
 ```
 
-# Build app
+# Build app (cross-compile)
 ```bash
 mkdir build
 cd build
