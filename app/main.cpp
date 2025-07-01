@@ -6,7 +6,9 @@
 
 #include <opencv2/opencv.hpp>
 #include "ssd1306/ssd1306.h"
+#include "utils/utils.h"
 
+static void process_frames(int width, int height, cv::VideoCapture& cap, cv::CascadeClassifier& face_cascade, FILE* pipeout);
 static void cleanup_records(const std::string& directory, int max_files);
 
 int main() {
@@ -17,6 +19,11 @@ int main() {
 
     std::string output_dir = "./records";
     const int max_files = 3;
+
+    if (ssd1306_init() == -1) {
+        std::cerr << "Failed to init ssd1306\n";
+        return -1;
+    }
 
     if (mkdir(output_dir.c_str(), 0755) == -1 && errno != EEXIST) {
         std::cerr << "Failed to make dir\n";
@@ -56,9 +63,42 @@ int main() {
         return -1;
     }
 
+    std::thread process_frames_thread(process_frames, width, height, std::ref(cap), std::ref(face_cascade), pipeout);
+
     std::thread cleanup_records_thread(cleanup_records, output_dir, max_files);
     cleanup_records_thread.detach();
 
+    while (true)
+    {
+        int cpu_usage;
+        get_cpu_usage(&cpu_usage);
+
+        int mem_used, mem_total;
+        get_memory_usage(&mem_used, &mem_total);
+
+        char display_text[128];
+        snprintf(display_text, sizeof(display_text), 
+            "CPU: %d%%\nRAM: %d/%d MB", 
+            cpu_usage, mem_used, mem_total);
+
+        if (ssd1306_write(display_text) != 0) {
+            std::cerr << "Failed to write to SSD1306\n";
+            break;
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+    }
+
+    ssd1306_end();
+
+    process_frames_thread.join();
+    pclose(pipeout);
+    cap.release();
+
+    return 0;
+}
+
+static void process_frames(int width, int height, cv::VideoCapture& cap, cv::CascadeClassifier& face_cascade, FILE* pipeout) {
     cv::Mat frame, gray_frame;
     int frame_count = 0;
     const int detection_interval = 10;
@@ -69,8 +109,9 @@ int main() {
     {
         cap >> frame;
         if (frame.empty()) {
-            std::cerr << "Empty frame\n";
+            std::cerr << "Empty frame, retrying...\n";
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            continue;
         }
 
         auto now = std::chrono::system_clock::now();
@@ -120,10 +161,6 @@ int main() {
             frame_count = 0;
         }
     }
-
-    pclose(pipeout);
-    cap.release();
-    return 0;
 }
 
 static void cleanup_records(const std::string& directory, int max_files) {
