@@ -26,3 +26,9 @@ LICENSE_FLAGS_ACCEPTED += "commercial"
 PACKAGECONFIG:append:pn-ffmpeg = " gpl x264"
 IMAGE_INSTALL:append = " ffmpeg myapp openssh"
 ```
+
+5. Build image
+```bash
+cd poky/build
+bitbake core-image-minimal
+```
